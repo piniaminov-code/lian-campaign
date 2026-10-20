@@ -278,7 +278,7 @@ function startRhythm(){
   document.getElementById('rhythm-start').classList.add('hidden');
   document.getElementById('rhythm-end').classList.add('hidden');
   const {w,h,ctx}=fitCanvas(R.cv); const lanes=4,lw=w/lanes,targetY=h-60;
-  let notes=[],score=0,combo=0,alive=true,last=0,spawn=0,speed=2.1;
+  let notes=[],score=0,combo=0,alive=true,last=0,spawn=0;
   document.getElementById('rhythm-score').textContent='נקודות: 0';
   const symbols=['⭐','🎵','🎶','💖'];
   function draw(){ctx.clearRect(0,0,w,h);
@@ -288,10 +288,10 @@ function startRhythm(){
     notes.forEach(n=>{ctx.font='30px sans-serif';ctx.textAlign='center';ctx.fillText(n.sym,n.lane*lw+lw/2,n.y+10);});
   }
   function loop(ts){ if(!alive)return;
-    if(ts-spawn>620){spawn=ts;notes.push({lane:Math.floor(Math.random()*lanes),y:-30,sym:symbols[Math.floor(Math.random()*4)]});}
-    notes.forEach(n=>n.y+=speed); 
+    const spd=140+(startTs? (ts-startTs)/1000:0)*3;
+    if(ts-spawn>620){spawn=ts;notes.push({lane:Math.floor(Math.random()*lanes),born:ts,sym:symbols[Math.floor(Math.random()*4)]});}
+    notes.forEach(n=>n.y=-30+(ts-n.born)/1000*spd);
     notes=notes.filter(n=>{ if(n.y>targetY+44){combo=0;return false;} return true;});
-    speed=2.1+(30-parseInt(document.getElementById('rhythm-time').textContent))*0.02;
     draw(); requestAnimationFrame(loop);
   }
   function hit(x){ const lane=Math.min(lanes-1,Math.floor(x/lw));
@@ -300,6 +300,7 @@ function startRhythm(){
       document.getElementById('rhythm-score').textContent='נקודות: '+score;}
   }
   R.cv.onpointerdown=e=>{const r=R.cv.getBoundingClientRect();hit(e.clientX-r.left);};
+  let startTs=0; requestAnimationFrame(ts=>{startTs=ts;});
   countdown(document.getElementById('rhythm-time'),30,()=>{alive=false;
     document.getElementById('rhythm-score-txt').textContent=score+' נקודות! 🎉';
     document.getElementById('rhythm-end').classList.remove('hidden');
@@ -313,15 +314,16 @@ function startCatch(){
   document.getElementById('catch-start').classList.add('hidden');
   document.getElementById('catch-end').classList.add('hidden');
   const {w,h,ctx}=fitCanvas(C.cv);
-  let items=[],score=0,alive=true,spawn=0;
+  let items=[],score=0,alive=true,spawn=0,startTsC=0; requestAnimationFrame(ts=>{startTsC=ts;});
   const px={x:w/2}; const py=h-46;
   document.getElementById('catch-score').textContent='נקודות: 0';
   const kinds=[{s:'💡',p:10},{s:'⭐',p:5},{s:'🎵',p:5},{s:'💖',p:5}];
   C.cv.onpointermove=e=>{const r=C.cv.getBoundingClientRect();px.x=Math.max(30,Math.min(w-30,e.clientX-r.left));};
   C.cv.onpointerdown=C.cv.onpointermove;
   function loop(ts){ if(!alive)return;
-    if(ts-spawn>650){spawn=ts;const k=kinds[Math.floor(Math.random()*kinds.length)];items.push({x:20+Math.random()*(w-40),y:-24,k,spd:1.7+Math.random()*1.2});}
-    items.forEach(it=>it.y+=it.spd);
+    const base=150+(ts-startTsC)/1000*2;
+    if(ts-spawn>650){spawn=ts;const k=kinds[Math.floor(Math.random()*kinds.length)];items.push({x:20+Math.random()*(w-40),born:ts,k,spd:base+Math.random()*70});}
+    items.forEach(it=>it.y=-24+(ts-it.born)/1000*it.spd);
     items=items.filter(it=>{
       if(it.y>py-26&&it.y<py+22&&Math.abs(it.x-px.x)<42){score+=it.k.p;document.getElementById('catch-score').textContent='נקודות: '+score;return false;}
       return it.y<h+30;});
