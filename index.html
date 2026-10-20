@@ -174,12 +174,12 @@ footer .heart{font-size:22px}
   <!-- GAME 1: rhythm -->
   <div class="game" id="g1">
     <div class="game-head"><span style="font-size:24px">🥁</span><h3>תופסים את הקצב</h3><span class="tag">30 שניות</span></div>
-    <div class="game-desc">הכוכבים יורדים בביט של ליאן — תקליקו על הטור הנכון בדיוק כשהכוכב מגיע לקו!</div>
+    <div class="game-desc">הכוכבים יורדים בביט של ליאן — תקליקו על הטור הנכון בדיוק כשהכוכב מגיע לקו, וכל פגיעה מנגנת את ההמשך של השיר! 🎶</div>
     <div class="stage">
       <canvas id="rhythm" width="360" height="420"></canvas>
       <div class="overlay" id="rhythm-start">
         <div class="big">תופסים את הקצב 🥁</div>
-        <div class="mid">כוכב על הקו = קליק על הטור שלו</div>
+        <div class="mid">כוכב על הקו = קליק על הטור שלו, וכל פגיעה מנגנת עוד קטע מהשיר של ליאן 🎵</div>
         <button class="btn btn-pink" onclick="startRhythm()">▶ התחילו</button>
         <div class="vote">🗳️ ואל תשכחו: בבחירות מצביעים ליאן!</div>
       </div>
@@ -272,9 +272,27 @@ function confetti(cv){ const c=cv.getContext('2d'); cv.width=cv.offsetWidth; cv.
   if(++n>=260){clearInterval(iv);c.clearRect(0,0,cv.width,cv.height);}},33);}
 function countdown(el,sec,onEnd){ let t=sec; el.textContent=t; const iv=setInterval(()=>{t--;el.textContent=t; if(t<=0){clearInterval(iv);onEnd();}},1000); return iv; }
 
+/* ---------- jingle player: each good tap plays the next slice of Lian's song ---------- */
+const JINGLE_LEN=26.04,JINGLE_STEPS=48;
+const jingle=new Audio('https://github.com/piniaminov-code/lian-campaign/releases/download/v1.0/lian-jingle.mp3');
+jingle.preload='auto';
+let jinglePos=0,jingleTimer=null;
+function resetJingle(){jinglePos=0;clearTimeout(jingleTimer);try{jingle.pause();jingle.currentTime=0;}catch(e){}}
+function playJingleSlice(){
+  if(jinglePos>=JINGLE_LEN)return;
+  const step=JINGLE_LEN/JINGLE_STEPS;
+  if(jingle.paused){try{jingle.currentTime=jinglePos;}catch(e){}const p=jingle.play();if(p&&p.catch)p.catch(()=>{});}
+  jinglePos=Math.min(jinglePos+step,JINGLE_LEN);
+  clearTimeout(jingleTimer);
+  const remain=Math.max((jinglePos-jingle.currentTime)*1000+80,120);
+  jingleTimer=setTimeout(()=>{if(!jingle.ended)jingle.pause();},remain);
+}
+window.__jingle=jingle;window.__playSlice=playJingleSlice;window.__jingleState=()=>({pos:Math.round(jinglePos*100)/100,paused:jingle.paused,t:Math.round(jingle.currentTime*100)/100,ready:jingle.readyState,dur:jingle.duration});
+
 /* ---------- GAME 1: rhythm tap ---------- */
 const R={cv:document.getElementById('rhythm'),playing:false};
 function startRhythm(){
+  resetJingle();
   document.getElementById('rhythm-start').classList.add('hidden');
   document.getElementById('rhythm-end').classList.add('hidden');
   const {w,h,ctx}=fitCanvas(R.cv); const lanes=4,lw=w/lanes,targetY=h-60;
@@ -296,13 +314,14 @@ function startRhythm(){
   }
   function hit(x){ const lane=Math.min(lanes-1,Math.floor(x/lw));
     let best=null,bd=1e9; notes.forEach(n=>{if(n.lane===lane){const d=Math.abs(n.y-targetY);if(d<bd){bd=d;best=n;}}});
-    if(best&&bd<30){notes=notes.filter(n=>n!==best);combo++;score+=10+Math.min(combo,10);
+    if(best&&bd<30){notes=notes.filter(n=>n!==best);combo++;score+=10+Math.min(combo,10);playJingleSlice();
       document.getElementById('rhythm-score').textContent='נקודות: '+score;}
   }
   R.cv.onpointerdown=e=>{const r=R.cv.getBoundingClientRect();hit(e.clientX-r.left);};
   const startTs=performance.now();
   const iv=setInterval(()=>loop(performance.now()),33);
   countdown(document.getElementById('rhythm-time'),30,()=>{alive=false;clearInterval(iv);
+    try{jingle.pause();}catch(e){}
     document.getElementById('rhythm-score-txt').textContent=score+' נקודות! 🎉';
     document.getElementById('rhythm-end').classList.remove('hidden');
     confetti(document.getElementById('rhythm-conf'));});
@@ -383,3 +402,4 @@ function startBalloons(){
 </script>
 </body>
 </html>
+
