@@ -268,8 +268,8 @@ footer .heart{font-size:22px}
 function fitCanvas(cv){ const r=cv.getBoundingClientRect(); const dpr=window.devicePixelRatio||1; cv.width=r.width*dpr; cv.height=r.width*(420/360)*dpr; const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {w:r.width,h:r.width*(420/360),ctx}; }
 function confetti(cv){ const c=cv.getContext('2d'); cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; const P=[]; const colors=['#7c3aed','#ec4899','#f97316','#facc15','#22d3ee','#a3e635'];
   for(let i=0;i<90;i++)P.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height,r:3+Math.random()*4,c:colors[i%6],vy:1.5+Math.random()*2.5,vx:-1+Math.random()*2,rot:Math.random()*6.28});
-  let n=0;(function f(){c.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.rot+=.08;c.save();c.translate(p.x,p.y);c.rotate(p.rot);c.fillStyle=p.c;c.fillRect(-p.r,-p.r/2,p.r*2,p.r);c.restore();});
-  if(++n<260)requestAnimationFrame(f);else c.clearRect(0,0,cv.width,cv.height);})();}
+  let n=0;const iv=setInterval(()=>{c.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.rot+=.08;c.save();c.translate(p.x,p.y);c.rotate(p.rot);c.fillStyle=p.c;c.fillRect(-p.r,-p.r/2,p.r*2,p.r);c.restore();});
+  if(++n>=260){clearInterval(iv);c.clearRect(0,0,cv.width,cv.height);}},33);}
 function countdown(el,sec,onEnd){ let t=sec; el.textContent=t; const iv=setInterval(()=>{t--;el.textContent=t; if(t<=0){clearInterval(iv);onEnd();}},1000); return iv; }
 
 /* ---------- GAME 1: rhythm tap ---------- */
@@ -288,11 +288,11 @@ function startRhythm(){
     notes.forEach(n=>{ctx.font='30px sans-serif';ctx.textAlign='center';ctx.fillText(n.sym,n.lane*lw+lw/2,n.y+10);});
   }
   function loop(ts){ if(!alive)return;
-    const spd=140+(startTs? (ts-startTs)/1000:0)*3;
+    const spd=140+(ts-startTs)/1000*3;
     if(ts-spawn>620){spawn=ts;notes.push({lane:Math.floor(Math.random()*lanes),born:ts,sym:symbols[Math.floor(Math.random()*4)]});}
     notes.forEach(n=>n.y=-30+(ts-n.born)/1000*spd);
     notes=notes.filter(n=>{ if(n.y>targetY+44){combo=0;return false;} return true;});
-    draw(); requestAnimationFrame(loop);
+    draw();
   }
   function hit(x){ const lane=Math.min(lanes-1,Math.floor(x/lw));
     let best=null,bd=1e9; notes.forEach(n=>{if(n.lane===lane){const d=Math.abs(n.y-targetY);if(d<bd){bd=d;best=n;}}});
@@ -300,12 +300,12 @@ function startRhythm(){
       document.getElementById('rhythm-score').textContent='נקודות: '+score;}
   }
   R.cv.onpointerdown=e=>{const r=R.cv.getBoundingClientRect();hit(e.clientX-r.left);};
-  let startTs=0; requestAnimationFrame(ts=>{startTs=ts;});
-  countdown(document.getElementById('rhythm-time'),30,()=>{alive=false;
+  const startTs=performance.now();
+  const iv=setInterval(()=>loop(performance.now()),33);
+  countdown(document.getElementById('rhythm-time'),30,()=>{alive=false;clearInterval(iv);
     document.getElementById('rhythm-score-txt').textContent=score+' נקודות! 🎉';
     document.getElementById('rhythm-end').classList.remove('hidden');
     confetti(document.getElementById('rhythm-conf'));});
-  requestAnimationFrame(loop);
 }
 
 /* ---------- GAME 2: catch ideas ---------- */
@@ -314,7 +314,7 @@ function startCatch(){
   document.getElementById('catch-start').classList.add('hidden');
   document.getElementById('catch-end').classList.add('hidden');
   const {w,h,ctx}=fitCanvas(C.cv);
-  let items=[],score=0,alive=true,spawn=0,startTsC=0; requestAnimationFrame(ts=>{startTsC=ts;});
+  let items=[],score=0,alive=true,spawn=0; const startTsC=performance.now();
   const px={x:w/2}; const py=h-46;
   document.getElementById('catch-score').textContent='נקודות: 0';
   const kinds=[{s:'💡',p:10},{s:'⭐',p:5},{s:'🎵',p:5},{s:'💖',p:5}];
@@ -330,13 +330,12 @@ function startCatch(){
     ctx.clearRect(0,0,w,h);
     items.forEach(it=>{ctx.font='26px sans-serif';ctx.textAlign='center';ctx.fillText(it.k.s,it.x,it.y);});
     ctx.font='44px sans-serif';ctx.fillText('🎤',px.x,py+10);
-    requestAnimationFrame(loop);
   }
-  countdown(document.getElementById('catch-time'),30,()=>{alive=false;
+  const iv2=setInterval(()=>loop(performance.now()),33);
+  countdown(document.getElementById('catch-time'),30,()=>{alive=false;clearInterval(iv2);
     document.getElementById('catch-score-txt').textContent=score+' נקודות! 🎉';
     document.getElementById('catch-end').classList.remove('hidden');
     confetti(document.getElementById('catch-conf'));});
-  requestAnimationFrame(loop);
 }
 
 /* ---------- GAME 3: balloon pop ---------- */
@@ -366,7 +365,7 @@ function startBalloons(){
     const x=10+Math.random()*(zw-80);b.style.left=x+'px';
     const dur=4200+Math.random()*2200; b.style.transition=`transform ${dur}ms linear, opacity .18s`;
     zone.appendChild(b);
-    requestAnimationFrame(()=>{b.style.transform=`translateY(-520px)`;});
+    setTimeout(()=>{b.style.transform=`translateY(-520px)`;},60);
     function pop(){ if(!alive)return;
       score+=pts;document.getElementById('balloon-score').textContent='נקודות: '+score;
       if(b.dataset.letter){got.add(b.dataset.letter);renderLetters();
