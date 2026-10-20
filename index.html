@@ -274,20 +274,38 @@ function countdown(el,sec,onEnd){ let t=sec; el.textContent=t; const iv=setInter
 
 /* ---------- jingle player: each good tap plays the next slice of Lian's song ---------- */
 const JINGLE_LEN=26.04,JINGLE_STEPS=48;
-const jingle=new Audio('https://github.com/piniaminov-code/lian-campaign/releases/download/v1.0/lian-jingle.mp3');
+const jingle=new Audio();
 jingle.preload='auto';
-let jinglePos=0,jingleTimer=null;
+let jingleReady=false,jingleLoading=false,jinglePos=0,jingleTimer=null;
+async function loadJingle(){
+  if(jingleReady||jingleLoading)return; jingleLoading=true;
+  try{
+    const r=await fetch('lian-jingle-b64.txt',{cache:'no-store'});
+    const t=await r.text();
+    const bin=atob(t.replace(/\s/g,''));
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    jingle.src=URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
+    jingle.load();
+    jingleReady=true;
+  }catch(e){jingleLoading=false;}
+}
+loadJingle();
+document.addEventListener('pointerdown',loadJingle,{passive:true});
 function resetJingle(){jinglePos=0;clearTimeout(jingleTimer);try{jingle.pause();jingle.currentTime=0;}catch(e){}}
 function playJingleSlice(){
   if(jinglePos>=JINGLE_LEN)return;
   const step=JINGLE_LEN/JINGLE_STEPS;
-  if(jingle.paused){try{jingle.currentTime=jinglePos;}catch(e){}const p=jingle.play();if(p&&p.catch)p.catch(()=>{});}
+  if(!jingleReady){loadJingle();}
+  else if(jingle.paused){try{jingle.currentTime=jinglePos;}catch(e){}const p=jingle.play();if(p&&p.catch)p.catch(()=>{});}
   jinglePos=Math.min(jinglePos+step,JINGLE_LEN);
   clearTimeout(jingleTimer);
-  const remain=Math.max((jinglePos-jingle.currentTime)*1000+80,120);
-  jingleTimer=setTimeout(()=>{if(!jingle.ended)jingle.pause();},remain);
+  if(jingleReady){
+    const remain=Math.max((jinglePos-jingle.currentTime)*1000+80,120);
+    jingleTimer=setTimeout(()=>{if(!jingle.ended)jingle.pause();},remain);
+  }
 }
-window.__jingle=jingle;window.__playSlice=playJingleSlice;window.__jingleState=()=>({pos:Math.round(jinglePos*100)/100,paused:jingle.paused,t:Math.round(jingle.currentTime*100)/100,ready:jingle.readyState,dur:jingle.duration});
+window.__jingle=jingle;window.__playSlice=playJingleSlice;window.__jingleState=()=>({pos:Math.round(jinglePos*100)/100,paused:jingle.paused,t:Math.round(jingle.currentTime*100)/100,ready:jingle.readyState,jr:jingleReady,dur:jingle.duration,src:(jingle.src||'').slice(0,40)});
 
 /* ---------- GAME 1: rhythm tap ---------- */
 const R={cv:document.getElementById('rhythm'),playing:false};
@@ -402,4 +420,3 @@ function startBalloons(){
 </script>
 </body>
 </html>
-
