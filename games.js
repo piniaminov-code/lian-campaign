@@ -12,6 +12,9 @@ ids.forEach(id=>{
  const root=$(id==='rhythm'?'g1':id==='catch'?'g2':'g3');
  root.classList.add('arcade');
  root.querySelector('h3').textContent=names[id];
+ root.querySelector('.game-head>span').textContent={rhythm:'♫',catch:'✦',balloon:'○'}[id];
+ root.querySelectorAll('.overlay button').forEach(b=>{if(b.textContent.includes('עוד פעם'))b.textContent='↻ עוד פעם';});
+ root.querySelector('.overlay[id$="-end"] .vote').textContent='בום פצצה, ליאן למועצה!';
  const bar=document.createElement('div');bar.className='arcade-tools';
  bar.innerHTML='<span id="'+id+'-best">שיא: '+best(id,0)+'</span><button type="button" id="'+id+'-pause" disabled>השהיה</button>';
  root.querySelector('.stage').before(bar);

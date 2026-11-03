@@ -22,3 +22,10 @@
 @media(prefers-reduced-motion:reduce){.sticker{animation:none}.arcade *{scroll-behavior:auto}}
 .arcade .overlay .confetti-canvas{background:transparent;z-index:0}
 .arcade .overlay>div,.arcade .overlay>button{position:relative;z-index:1}
+/* Keep RTL score and timer in separate bounded cells. */
+.arcade .scorebar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:12px 16px 8px;direction:rtl;align-items:center}
+.arcade .scorebar>span{min-width:0;white-space:nowrap;unicode-bidi:isolate}
+.arcade .scorebar .time{display:flex;direction:rtl;justify-content:flex-start;justify-self:end;align-items:center;gap:5px;text-align:start;padding:0 2px}
+.arcade .scorebar .time::before{content:'זמן:';font-size:12px}
+.arcade .scorebar .time::after{content:none}
+.arcade .game-head>span:first-child{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#f0ebfa;color:#7c6a9d;font-size:21px!important;font-family:Arial,sans-serif}
