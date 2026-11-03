@@ -101,5 +101,6 @@ window.startBalloons=function(){
 };
 document.addEventListener('keydown',e=>{if(!active||active.paused||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(active.id==='rhythm'&&/^[1-4]$/.test(e.key)){e.preventDefault();active.hit(Number(e.key)-1);}if(active.id==='catch'&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();active.px=Math.max(28,Math.min(active.w-28,active.px+(e.key==='ArrowLeft'?-24:24)));}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active&&!active.paused)toggle(active.id);});
+document.querySelectorAll('audio').forEach(a=>a.addEventListener('play',()=>{if(active&&!active.paused)toggle(active.id);}));
 window.addEventListener('resize',()=>{if(active)finish(active,true);});
 })();
