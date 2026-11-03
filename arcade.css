@@ -34,3 +34,7 @@
 .arcade .arcade-timer>span:first-child{font-size:12px}
 .arcade .scorebar .time{display:inline-block;direction:ltr;unicode-bidi:isolate;padding:0;min-width:20px;text-align:center}
 .arcade .scorebar .time::before,.arcade .scorebar .time::after{content:none}
+
+/* Music control inside the tools bar. */
+.arcade .arcade-btns{display:flex;gap:8px;align-items:center}
+.arcade .arcade-mute{min-width:46px}

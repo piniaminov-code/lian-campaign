@@ -8,6 +8,16 @@ let active=null;
 function best(id,value){try{const key='lian-arcade-v2-'+id;const old=Number(localStorage.getItem(key))||0;if(value>old)localStorage.setItem(key,String(value));return Math.max(old,value||0);}catch(e){return value||0;}}
 function status(id,text){$(id+'-feedback').textContent=text;}
 function stopMedia(){document.querySelectorAll('audio').forEach(a=>a.pause());resetJingle();}
+/* Original instrumental loops, one per game. Only one plays, only during a round. */
+const musicFiles={catch:'music-ideas.mp3',balloon:'music-balloons.mp3'};
+const music={};
+for(const id in musicFiles){const a=new Audio(musicFiles[id]);a.loop=true;a.preload='auto';a.volume=.45;a.className='game-music';a.style.display='none';a.setAttribute('aria-hidden','true');document.body.append(a);music[id]=a;}
+let musicMuted=false;try{musicMuted=localStorage.getItem('lian-arcade-music-muted')==='1';}catch(e){}
+function resumeMusic(id){const a=music[id];if(!a||musicMuted||!a.paused)return;const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{});}
+function startMusic(id){const a=music[id];if(!a)return;try{a.currentTime=0;}catch(e){}if(musicMuted)return;const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{});}
+function stopMusic(id){const a=music[id];if(!a)return;try{a.pause();a.currentTime=0;}catch(e){}}
+function applyMute(){for(const id in music)music[id].muted=musicMuted;try{jingle.muted=musicMuted;}catch(e){}document.querySelectorAll('.arcade-mute').forEach(b=>{b.textContent=musicMuted?'\u266b \u05de\u05d5\u05e9\u05ea\u05e7':'\u266b \u05de\u05d5\u05d6\u05d9\u05e7\u05d4';b.setAttribute('aria-pressed',musicMuted?'true':'false');});}
+window.__musicState=()=>Object.fromEntries(Object.entries(music).map(([k,a])=>[k,{paused:a.paused,t:Math.round(a.currentTime*100)/100,muted:a.muted,vol:a.volume,ready:a.readyState,dur:a.duration,err:a.error?a.error.code:null}]).concat([['muted',musicMuted],['jingleMuted',jingle.muted]]));
 ids.forEach(id=>{
  const root=$(id==='rhythm'?'g1':id==='catch'?'g2':'g3');
  root.classList.add('arcade');
@@ -17,12 +27,13 @@ ids.forEach(id=>{
  root.querySelectorAll('.overlay button').forEach(b=>{if(b.textContent.includes('עוד פעם'))b.textContent='↻ עוד פעם';});
  root.querySelector('.overlay[id$="-end"] .vote').textContent='בום פצצה, ליאן למועצה!';
  const bar=document.createElement('div');bar.className='arcade-tools';
- bar.innerHTML='<span id="'+id+'-best">שיא: '+best(id,0)+'</span><button type="button" id="'+id+'-pause" disabled>השהיה</button>';
+ bar.innerHTML='<span id="'+id+'-best">שיא: '+best(id,0)+'</span><span class="arcade-btns"><button type="button" class="arcade-mute" id="'+id+'-mute" aria-label="השתקת מוזיקת המשחק"></button><button type="button" id="'+id+'-pause" disabled>השהיה</button></span>';
  root.querySelector('.stage').before(bar);
  const feedback=document.createElement('div');feedback.id=id+'-feedback';feedback.className='arcade-feedback';feedback.setAttribute('aria-live','polite');feedback.textContent=id==='rhythm'?'4 טורים · רצף פגיעות מגדיל את הבונוס':id==='catch'?'כל רעיון שווה מקום · זהב שווה יותר':'אוספים את ל־י־א־ן · משלימים וזוכים בבונוס';
  root.querySelector('.scorebar').after(feedback);
  const stage=root.querySelector('.stage');const pause=document.createElement('div');pause.id=id+'-paused';pause.className='overlay arcade-pause hidden';pause.innerHTML='<div class="big">רגע לנשום</div><div class="mid">הזמן עצר. ממשיכים כשמוכנים.</div><button class="btn btn-purple" type="button">▶ ממשיכים</button>';stage.append(pause);
  $(id+'-pause').onclick=()=>toggle(id);pause.querySelector('button').onclick=()=>toggle(id);
+ $(id+'-mute').onclick=()=>{musicMuted=!musicMuted;try{localStorage.setItem('lian-arcade-music-muted',musicMuted?'1':'0');}catch(e){}applyMute();if(musicMuted){for(const m in music)music[m].pause();}else if(active&&!active.paused&&!active.done)resumeMusic(active.id);};
  const controls=document.createElement('div');controls.className='arcade-controls';
  if(id==='rhythm'){
   controls.innerHTML=[1,2,3,4].map((n,i)=>'<button type="button" aria-label="טור '+n+'">'+['★','♫','♥','✦'][i]+'<small>'+n+'</small></button>').join('');
@@ -38,14 +49,14 @@ ids.forEach(id=>{
  start.querySelector('.vote').textContent='בום פצצה, ליאן למועצה!';
 });
 $('rhythm-start').querySelector('.mid').textContent='כשהכוכב מגיע לפס: נוגעים בטור או בכפתור שמתחת. במחשב: 1–4. כל פגיעה ממשיכה את השיר.';
-$('catch-start').querySelector('.mid').textContent='גוררים את סל הרעיונות. תפסו כוכבי זהב וצרו רצף. ככל שמתקדמים, הקצב עולה!';
-$('balloon-start').querySelector('.mid').textContent='חפשו את האות המודגשת ואספו ל־י־א־ן לפי הסדר. כל שם מלא פותח סיבוב בונוס!';
+$('catch-start').querySelector('.mid').textContent='גוררים את סל הרעיונות. תפסו כוכבי זהב וצרו רצף. ככל שמתקדמים, הקצב עולה! בליווי מוזיקה מקורית.';
+$('balloon-start').querySelector('.mid').textContent='חפשו את האות המודגשת ואספו ל־י־א־ן לפי הסדר. כל שם מלא פותח סיבוב בונוס! בליווי מוזיקה מקורית.';
 $('g1').querySelector('.game-desc').textContent='הופעה קטנה עם השיר של ליאן. בונים רצף, קולעים לביט ומנסים לשבור שיא.';
 $('g2').querySelector('.game-desc').textContent='הכיתה מלאה ברעיונות. אספו אותם בסל, תפסו זהב והתקדמו משלבים רגועים לאתגר מהיר.';
 $('g3').querySelector('.game-desc').textContent='לא רק לפוצץ: צדים אותיות לפי הסדר, משלימים את השם ופותחים חגיגת בונוס.';
-function toggle(id){if(!active||active.id!==id)return;active.paused=!active.paused;active.last=performance.now();$(id+'-paused').classList.toggle('hidden',!active.paused);$(id+'-pause').textContent=active.paused?'ממשיכים':'השהיה';if(active.paused)jingle.pause();}
+function toggle(id){if(!active||active.id!==id)return;active.paused=!active.paused;active.last=performance.now();$(id+'-paused').classList.toggle('hidden',!active.paused);$(id+'-pause').textContent=active.paused?'ממשיכים':'השהיה';if(active.paused){jingle.pause();const m=music[id];if(m)m.pause();}else resumeMusic(id);}
 function finish(s,interrupted=false){
- if(!s||s.done)return;s.done=true;cancelAnimationFrame(s.raf);s.cleanup?.();resetJingle();
+ if(!s||s.done)return;s.done=true;cancelAnimationFrame(s.raf);s.cleanup?.();resetJingle();stopMusic(s.id);
  $(s.id+'-pause').disabled=true;$(s.id+'-paused').classList.add('hidden');
  const record=best(s.id,s.score);$(s.id+'-best').textContent='שיא: '+record;
  $(s.id+'-score-txt').textContent=s.score+' נקודות';
@@ -58,7 +69,7 @@ function begin(id){
  if(active)finish(active,true);stopMedia();
  const s={id,score:0,combo:0,maxCombo:0,caught:0,rounds:0,elapsed:0,last:performance.now(),paused:false,done:false,spawn:0,items:[],fx:[]};active=s;
  $(id+'-start').classList.add('hidden');$(id+'-end').classList.add('hidden');$(id+'-pause').disabled=false;$(id+'-pause').textContent='השהיה';
- $(id+'-score').textContent='נקודות: 0';$(id+'-time').textContent='30';return s;
+ $(id+'-score').textContent='נקודות: 0';$(id+'-time').textContent='30';startMusic(id);return s;
 }
 function add(s,n,text,x,y){s.score+=n;$(s.id+'-score').textContent='נקודות: '+s.score;if(text)status(s.id,text);if(x!=null)s.fx.push({x,y,t:0,text:'+'+n});}
 function run(s,frame){
@@ -105,6 +116,8 @@ window.startBalloons=function(){
 };
 document.addEventListener('keydown',e=>{if(!active||active.paused||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(active.id==='rhythm'&&/^[1-4]$/.test(e.key)){e.preventDefault();active.hit(Number(e.key)-1);}if(active.id==='catch'&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();active.px=Math.max(28,Math.min(active.w-28,active.px+(e.key==='ArrowLeft'?-24:24)));}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&active&&!active.paused)toggle(active.id);});
-document.querySelectorAll('audio').forEach(a=>a.addEventListener('play',()=>{if(active&&!active.paused)toggle(active.id);}));
+document.querySelectorAll('audio').forEach(a=>{if(a.classList.contains('game-music'))return;a.addEventListener('play',()=>{if(active&&!active.paused)toggle(active.id);});});
+document.addEventListener('pointerdown',()=>{if(active&&!active.paused&&!active.done)resumeMusic(active.id);},{passive:true});
+applyMute();
 window.addEventListener('resize',()=>{if(active)finish(active,true);});
 })();
