@@ -68,6 +68,13 @@ section{position:relative;z-index:1;margin:26px 0}
 .lyrics summary{cursor:pointer;font-weight:700;color:var(--purple);font-size:15px;padding:8px 4px}
 .lyrics .box{background:#faf5ff;border:1.5px dashed #c4b5fd;border-radius:14px;padding:14px;font-size:15.5px;line-height:1.9;white-space:pre-line}
 /* speech */
+.speech-listen{margin-bottom:16px;background:#f5f3ff;border:1px solid #e9d5ff;border-radius:16px;padding:14px}
+.speech-listen h3{font-size:17px;color:var(--purple-dark);margin-bottom:4px}
+.speech-listen p{font-size:13px;color:#6b5485;line-height:1.6;margin-bottom:10px}
+.speech-listen audio{display:block;width:100%;height:54px;direction:ltr}
+.speech-listen a{font-size:13px;color:#6d28d9;display:inline-block;margin-top:8px}
+.speech-listen .audio-error{color:#a21b3d;margin:8px 0 0}
+
 .speech{position:relative;background:linear-gradient(135deg,#fff,#fdf4ff);border-radius:22px;padding:22px 18px;border:2px solid #e9d5ff;box-shadow:0 8px 24px rgba(76,29,149,.10)}
 .speech .quote{font-size:38px;position:absolute;top:6px;right:12px;color:#e9d5ff;font-family:Heebo}
 .speech p{font-size:16.5px;line-height:1.85}
@@ -164,6 +171,16 @@ footer .heart{font-size:22px}
 <section id="speech">
   <div class="sec-title"><span class="emoji">🎙️</span><h2>הנאום של ליאן</h2></div>
   <div class="sec-sub">60 שניות מול הכיתה — קצר, ברור ומהלב</div>
+  <div class="speech-listen">
+    <h3>מקשיבים ומתרגלים 🎧</h3>
+    <p>כ־48 שניות · הדגמה בקול מלאכותי, לא הקלטה של ליאן. השיר נמצא בנגן הנפרד למעלה.</p>
+    <audio id="speech-audio" controls preload="metadata" playsinline aria-label="הדגמת הנאום בקול מלאכותי">
+      <source src="lian-speech.mp3" type="audio/mpeg">
+      הדפדפן לא תומך בנגן אודיו.
+    </audio>
+    <p id="speech-audio-error" class="audio-error" hidden>לא הצלחנו לטעון את הנאום. אפשר לנסות שוב דרך הקישור.</p>
+    <a href="lian-speech.mp3">פתיחת הנאום בקובץ אודיו</a>
+  </div>
   <div class="speech">
     <span class="quote">”</span>
     <p>היי כולם! אני ליאן, ואני רוצה להיות הנציגה שלנו במועצת התלמידים.<br><br>
@@ -171,9 +188,9 @@ footer .heart{font-size:22px}
     יש לי שלוש הבטחות:<br>
     <span class="hl">אחת</span> — תיבת רעיונות אמיתית בכיתה. כל אחד מכניס רעיון, ואני מעבירה אותם הלאה כל שבוע.<br>
     <span class="hl">שתיים</span> — יום פעילות אחד לפחות במהלך התקופה — יום שכל הכיתה נהנית בו יחד.<br>
-    <span class="hl">ושלוש</span> — פינת מוזיקה בהפסקה, כי לי מוזיקה זה הכי, ואני בטוחה שגם לכם יש שירים שאתם אוהבים.<br><br>
+    <span class="hl">ושלוש</span> — פינת מוזיקה בהפסקה, כי אני מאוד אוהבת מוזיקה, ואני בטוחה שגם לכם יש שירים שאתם אוהבים.<br><br>
     אני מבטיחה לעבוד קשה בשביל כולנו. בואו נהפוך את הכיתה שלנו להכי טובה שיש.<br>
-    <span class="hl">תצביעו ליאן — בום פצצה למועצה!</span> תודה!</p>
+    <span class="hl">בום פצצה, ליאן למועצה!</span> תודה!</p>
   </div>
   <div class="tips">
     <h3>🌟 טיפים לנאום מנצח</h3>
@@ -298,6 +315,14 @@ footer .heart{font-size:22px}
   a.addEventListener('timeupdate',function(){cur.textContent=fmt(a.currentTime);if(a.duration)bar.style.width=(a.currentTime/a.duration*100)+'%';});
   a.addEventListener('ended',function(){a.currentTime=0;bar.style.width='0%';cur.textContent='0:00';});
   prog.addEventListener('click',function(e){const r=prog.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;if(a.duration)a.currentTime=f*a.duration;});
+})();
+
+/* Speech uses a native MP3 player for Safari support. Keep the two recordings separate. */
+(function(){
+  const speech=document.getElementById('speech-audio'),song=document.getElementById('song-audio');
+  speech.addEventListener('play',()=>{song.pause();resetJingle();});
+  song.addEventListener('play',()=>speech.pause());
+  speech.addEventListener('error',()=>{document.getElementById('speech-audio-error').hidden=false;});
 })();
 
 /* ---------- shared helpers ---------- */
