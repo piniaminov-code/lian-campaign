@@ -71,6 +71,7 @@ section{position:relative;z-index:1;margin:26px 0}
 .speech-listen{margin-bottom:16px;background:#f5f3ff;border:1px solid #e9d5ff;border-radius:16px;padding:14px}
 .speech-listen h3{font-size:17px;color:var(--purple-dark);margin-bottom:4px}
 .speech-listen p{font-size:13px;color:#6b5485;line-height:1.6;margin-bottom:10px}
+.speech-play{border:0;border-radius:12px;background:#6d28d9;color:#fff;font:700 15px Heebo,sans-serif;padding:12px 20px;cursor:pointer;margin-bottom:10px;min-height:44px}
 .speech-listen audio{display:block;width:100%;height:54px;direction:ltr}
 .speech-listen a{font-size:13px;color:#6d28d9;display:inline-block;margin-top:8px}
 .speech-listen .audio-error{color:#a21b3d;margin:8px 0 0}
@@ -175,6 +176,7 @@ footer .heart{font-size:22px}
   <div class="speech-listen">
     <h3>מקשיבים ומתרגלים 🎧</h3>
     <p>כ־48 שניות · הדגמה בקול מלאכותי, לא הקלטה של ליאן. השיר נמצא בנגן הנפרד למעלה.</p>
+    <button id="speech-play" class="speech-play" type="button">▶ השמעת הנאום</button>
     <audio id="speech-audio" controls preload="metadata" playsinline aria-label="הדגמת הנאום בקול מלאכותי">
       <source src="lian-speech.mp3" type="audio/mpeg">
       הדפדפן לא תומך בנגן אודיו.
@@ -321,7 +323,10 @@ footer .heart{font-size:22px}
 /* Speech uses a native MP3 player for Safari support. Keep the two recordings separate. */
 (function(){
   const speech=document.getElementById('speech-audio'),song=document.getElementById('song-audio');
-  speech.addEventListener('play',()=>{song.pause();resetJingle();});
+  const btn=document.getElementById('speech-play');
+  btn.addEventListener('click',()=>{if(speech.paused)speech.play().catch(()=>{document.getElementById('speech-audio-error').hidden=false;});else speech.pause();});
+  speech.addEventListener('play',()=>{btn.textContent='⏸ עצירת הנאום';song.pause();resetJingle();});
+  speech.addEventListener('pause',()=>{btn.textContent='▶ השמעת הנאום';});
   song.addEventListener('play',()=>speech.pause());
   speech.addEventListener('error',()=>{document.getElementById('speech-audio-error').hidden=false;});
 })();
