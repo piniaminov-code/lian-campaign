@@ -11,6 +11,7 @@ function stopMedia(){document.querySelectorAll('audio').forEach(a=>a.pause());re
 ids.forEach(id=>{
  const root=$(id==='rhythm'?'g1':id==='catch'?'g2':'g3');
  root.classList.add('arcade');
+ const timer=$(id+'-time'),timerCell=document.createElement('span');timerCell.className='arcade-timer';timer.before(timerCell);const timerLabel=document.createElement('span');timerLabel.textContent='זמן';timerCell.append(timerLabel,timer);
  root.querySelector('h3').textContent=names[id];
  root.querySelector('.game-head>span').textContent={rhythm:'♫',catch:'✦',balloon:'○'}[id];
  root.querySelectorAll('.overlay button').forEach(b=>{if(b.textContent.includes('עוד פעם'))b.textContent='↻ עוד פעם';});

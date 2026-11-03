@@ -29,3 +29,8 @@
 .arcade .scorebar .time::before{content:'זמן:';font-size:12px}
 .arcade .scorebar .time::after{content:none}
 .arcade .game-head>span:first-child{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#f0ebfa;color:#7c6a9d;font-size:21px!important;font-family:Arial,sans-serif}
+
+.arcade .scorebar .arcade-timer{display:inline-flex;justify-self:end;align-items:center;gap:7px;direction:rtl;color:var(--pink);padding:0 3px}
+.arcade .arcade-timer>span:first-child{font-size:12px}
+.arcade .scorebar .time{display:inline-block;direction:ltr;unicode-bidi:isolate;padding:0;min-width:20px;text-align:center}
+.arcade .scorebar .time::before,.arcade .scorebar .time::after{content:none}
