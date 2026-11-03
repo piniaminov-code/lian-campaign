@@ -178,7 +178,7 @@ footer .heart{font-size:22px}
     <p>כ־48 שניות · הדגמה בקול מלאכותי, לא הקלטה של ליאן. השיר נמצא בנגן הנפרד למעלה.</p>
     <button id="speech-play" class="speech-play" type="button">▶ השמעת הנאום</button>
     <audio id="speech-audio" controls preload="metadata" playsinline aria-label="הדגמת הנאום בקול מלאכותי">
-      <source src="lian-speech.mp3" type="audio/mpeg">
+      <source src="lian-speech.mp3" type="audio/mpeg" onerror="document.getElementById('speech-audio-error').hidden=false">
       הדפדפן לא תומך בנגן אודיו.
     </audio>
     <p id="speech-audio-error" class="audio-error" hidden>לא הצלחנו לטעון את הנאום. אפשר לנסות שוב דרך הקישור.</p>
