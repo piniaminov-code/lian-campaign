@@ -58,8 +58,8 @@ function begin(id){
 }
 function add(s,n,text,x,y){s.score+=n;$(s.id+'-score').textContent='נקודות: '+s.score;if(text)status(s.id,text);if(x!=null)s.fx.push({x,y,t:0,text:'+'+n});}
 function run(s,frame){
- function tick(ts){if(s.done)return;const dt=Math.min((ts-s.last)/1000,.06);s.last=ts;
- if(!s.paused){s.elapsed+=dt;if(s.elapsed>=30){$(s.id+'-time').textContent='0';finish(s);return;}$(s.id+'-time').textContent=Math.ceil(30-s.elapsed);frame(dt);}
+ function tick(ts){if(s.done)return;const elapsed=Math.max(0,(ts-s.last)/1000),dt=Math.min(elapsed,.1);s.last=ts;
+ if(!s.paused){s.elapsed+=elapsed;if(s.elapsed>=30){$(s.id+'-time').textContent='0';finish(s);return;}$(s.id+'-time').textContent=Math.ceil(30-s.elapsed);frame(dt);}
  s.raf=requestAnimationFrame(tick);
  }s.raf=requestAnimationFrame(tick);
 }
