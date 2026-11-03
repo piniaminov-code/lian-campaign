@@ -1,0 +1,22 @@
+/* Focused arcade refresh, campaign colours with a calmer stage. */
+.arcade{border-color:#e3dcf2;box-shadow:0 9px 24px rgba(42,30,75,.08)}
+.arcade .game-head{padding-top:18px}.arcade .game-head h3{font-size:21px}.arcade .game-head .tag{background:#eee9fa;color:#59477d}
+.arcade .game-desc{color:#76678b;line-height:1.65;padding-bottom:12px}
+.arcade-tools{display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px;font-size:13px;font-weight:700;color:#665580}
+.arcade-tools button{border:1px solid #d9d0e8;border-radius:10px;padding:8px 16px;background:#faf8ff;color:#534268;font:inherit;cursor:pointer;min-height:40px}
+.arcade-tools button:disabled{opacity:.4;cursor:default}
+.arcade .stage canvas{background:#171b38}.arcade .overlay{background:rgba(23,27,56,.94);backdrop-filter:blur(2px);gap:15px;padding:24px}
+.arcade .overlay .big{color:#fff;font-size:28px}.arcade .overlay .mid{color:#d4cbea;max-width:310px;font-size:15px;line-height:1.75}
+.arcade .overlay .vote{background:transparent;color:#c4b5fd;border:0;font-size:13px;padding:0}
+.arcade .overlay .btn{box-shadow:none;border-radius:14px;padding:13px 27px;font-size:17px}
+.arcade-pause{z-index:8}.arcade .scorebar{font-size:15px;padding-top:12px}.arcade .scorebar .time::after{content:' שנ׳';font-size:12px}
+.arcade-feedback{min-height:42px;font-size:13px;color:#76678b;text-align:center;padding:4px 12px 14px}
+.arcade-controls{display:flex;direction:ltr;gap:6px;padding:10px 12px;background:#211e3d;align-items:center;justify-content:space-between}
+.arcade-controls button{flex:1;min-height:54px;border:1px solid #65598c;border-radius:10px;background:#353050;color:#ded7fc;font-size:22px;touch-action:manipulation;cursor:pointer}
+.arcade-controls button:active{background:#695c97}.arcade-controls small{display:block;font-size:10px;margin-top:1px;color:#a99cc6}.arcade-controls span{flex:2;color:#c6bddc;text-align:center;font-size:12px;line-height:1.5;direction:rtl}
+.arcade .balloon-zone{height:380px;background:radial-gradient(ellipse at 50% 110%,#47345e,#171b38)}
+.arcade .balloon{border:0;bottom:auto;width:60px;height:74px;min-width:44px;min-height:44px;z-index:1;font-family:Heebo,sans-serif;box-shadow:inset -5px -7px 12px rgba(0,0,0,.14),0 4px 14px rgba(0,0,0,.12)}
+.arcade .balloon:after{border:0;width:1px;height:28px;bottom:-28px;background:#aaa1c7}.arcade .overlay{z-index:3}.arcade .letters{z-index:2;right:10px;left:10px;top:10px;background:#211f3f;border:1px solid #63547c;display:flex;justify-content:center;align-items:center;gap:10px;letter-spacing:0;color:#9a8aaf;padding:7px}
+.letters span{width:29px;text-align:center;border-bottom:2px solid transparent}.letters span.letter-done{color:#5eead4}.letters span.letter-next{color:#fff;border-color:#fcd774}.letters small{font-size:11px;color:#b5a6d0;margin-right:6px}
+@media(max-width:380px){.arcade .game-head h3{font-size:18px}.arcade .overlay .big{font-size:24px}.arcade .overlay{padding:18px}}
+@media(prefers-reduced-motion:reduce){.sticker{animation:none}.arcade *{scroll-behavior:auto}}

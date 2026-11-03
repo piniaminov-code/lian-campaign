@@ -116,6 +116,7 @@ footer .heart{font-size:22px}
 .confetti-canvas{position:absolute;inset:0;pointer-events:none}
 @media (min-width:480px){.hero h1{font-size:76px}}
 </style>
+<link rel="stylesheet" href="arcade.css">
 </head>
 <body>
 <div class="sticker" style="top:12%;right:4%">🎵</div>
@@ -205,7 +206,7 @@ footer .heart{font-size:22px}
 
 <section id="games">
   <div class="sec-title"><span class="emoji">🎮</span><h2>משחקים</h2></div>
-  <div class="sec-sub">שלושה משחקים קצרים וממכרים — ומי שמנצח יודע למי להצביע 😉</div>
+  <div class="sec-sub">שלוש משימות, 30 שניות לכל סיבוב. משחקים, משתפרים ושוברים את השיא של עצמכם.</div>
 
   <!-- GAME 1: rhythm -->
   <div class="game" id="g1">
@@ -368,116 +369,7 @@ function playJingleSlice(){
 }
 window.__jingle=jingle;window.__playSlice=playJingleSlice;window.__jingleState=()=>({pos:Math.round(jinglePos*100)/100,paused:jingle.paused,t:Math.round(jingle.currentTime*100)/100,ready:jingle.readyState,jr:jingleReady,dur:jingle.duration,src:(jingle.src||'').slice(0,40)});
 
-/* ---------- GAME 1: rhythm tap ---------- */
-const R={cv:document.getElementById('rhythm'),playing:false};
-function startRhythm(){
-  resetJingle();
-  document.getElementById('rhythm-start').classList.add('hidden');
-  document.getElementById('rhythm-end').classList.add('hidden');
-  const {w,h,ctx}=fitCanvas(R.cv); const lanes=4,lw=w/lanes,targetY=h-60;
-  let notes=[],score=0,combo=0,alive=true,last=0,spawn=0;
-  document.getElementById('rhythm-score').textContent='נקודות: 0';
-  const symbols=['⭐','🎵','🎶','💖'];
-  function draw(){ctx.clearRect(0,0,w,h);
-    for(let i=1;i<lanes;i++){ctx.strokeStyle='rgba(124,58,237,.15)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(i*lw,0);ctx.lineTo(i*lw,h);ctx.stroke();}
-    ctx.fillStyle='rgba(236,72,153,.18)';ctx.fillRect(0,targetY-26,w,52);
-    ctx.strokeStyle='#ec4899';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,targetY);ctx.lineTo(w,targetY);ctx.stroke();
-    notes.forEach(n=>{ctx.font='30px sans-serif';ctx.textAlign='center';ctx.fillText(n.sym,n.lane*lw+lw/2,n.y+10);});
-  }
-  function loop(ts){ if(!alive)return;
-    const spd=140+(ts-startTs)/1000*3;
-    if(ts-spawn>620){spawn=ts;notes.push({lane:Math.floor(Math.random()*lanes),born:ts,sym:symbols[Math.floor(Math.random()*4)]});}
-    notes.forEach(n=>n.y=-30+(ts-n.born)/1000*spd);
-    notes=notes.filter(n=>{ if(n.y>targetY+44){combo=0;return false;} return true;});
-    draw();
-  }
-  function hit(x){ const lane=Math.min(lanes-1,Math.floor(x/lw));
-    let best=null,bd=1e9; notes.forEach(n=>{if(n.lane===lane){const d=Math.abs(n.y-targetY);if(d<bd){bd=d;best=n;}}});
-    if(best&&bd<30){notes=notes.filter(n=>n!==best);combo++;score+=10+Math.min(combo,10);playJingleSlice();
-      document.getElementById('rhythm-score').textContent='נקודות: '+score;}
-  }
-  R.cv.onpointerdown=e=>{const r=R.cv.getBoundingClientRect();hit(e.clientX-r.left);};
-  const startTs=performance.now();
-  const iv=setInterval(()=>loop(performance.now()),33);
-  countdown(document.getElementById('rhythm-time'),30,()=>{alive=false;clearInterval(iv);
-    try{jingle.pause();}catch(e){}
-    document.getElementById('rhythm-score-txt').textContent=score+' נקודות! 🎉';
-    document.getElementById('rhythm-end').classList.remove('hidden');
-    confetti(document.getElementById('rhythm-conf'));});
-}
-
-/* ---------- GAME 2: catch ideas ---------- */
-const C={cv:document.getElementById('catch')};
-function startCatch(){
-  document.getElementById('catch-start').classList.add('hidden');
-  document.getElementById('catch-end').classList.add('hidden');
-  const {w,h,ctx}=fitCanvas(C.cv);
-  let items=[],score=0,alive=true,spawn=0; const startTsC=performance.now();
-  const px={x:w/2}; const py=h-46;
-  document.getElementById('catch-score').textContent='נקודות: 0';
-  const kinds=[{s:'💡',p:10},{s:'⭐',p:5},{s:'🎵',p:5},{s:'💖',p:5}];
-  C.cv.onpointermove=e=>{const r=C.cv.getBoundingClientRect();px.x=Math.max(30,Math.min(w-30,e.clientX-r.left));};
-  C.cv.onpointerdown=C.cv.onpointermove;
-  function loop(ts){ if(!alive)return;
-    const base=150+(ts-startTsC)/1000*2;
-    if(ts-spawn>650){spawn=ts;const k=kinds[Math.floor(Math.random()*kinds.length)];items.push({x:20+Math.random()*(w-40),born:ts,k,spd:base+Math.random()*70});}
-    items.forEach(it=>it.y=-24+(ts-it.born)/1000*it.spd);
-    items=items.filter(it=>{
-      if(it.y>py-26&&it.y<py+22&&Math.abs(it.x-px.x)<42){score+=it.k.p;document.getElementById('catch-score').textContent='נקודות: '+score;return false;}
-      return it.y<h+30;});
-    ctx.clearRect(0,0,w,h);
-    items.forEach(it=>{ctx.font='26px sans-serif';ctx.textAlign='center';ctx.fillText(it.k.s,it.x,it.y);});
-    ctx.font='44px sans-serif';ctx.fillText('🎤',px.x,py+10);
-  }
-  const iv2=setInterval(()=>loop(performance.now()),33);
-  countdown(document.getElementById('catch-time'),30,()=>{alive=false;clearInterval(iv2);
-    document.getElementById('catch-score-txt').textContent=score+' נקודות! 🎉';
-    document.getElementById('catch-end').classList.remove('hidden');
-    confetti(document.getElementById('catch-conf'));});
-}
-
-/* ---------- GAME 3: balloon pop ---------- */
-function startBalloons(){
-  document.getElementById('balloon-start').classList.add('hidden');
-  document.getElementById('balloon-end').classList.add('hidden');
-  const zone=document.getElementById('balloon-zone');
-  zone.querySelectorAll('.balloon').forEach(b=>b.remove());
-  let score=0,alive=true;
-  const need=['ל','י','א','ן']; const got=new Set();
-  const lb=document.getElementById('letters-box');
-  function renderLetters(){lb.textContent=need.map(ch=>got.has(ch)?ch:'_').join(' ');}
-  renderLetters();
-  document.getElementById('balloon-score').textContent='נקודות: 0';
-  const colors=['#ec4899','#7c3aed','#f97316','#06b6d4','#84cc16','#f43f5e'];
-  const zw=zone.offsetWidth;
-  let letterIdx=0;
-  const iv=setInterval(()=>{
-    if(!alive)return;
-    const b=document.createElement('div');b.className='balloon';
-    const isLetter=Math.random()<0.16;
-    const col=colors[Math.floor(Math.random()*colors.length)];
-    b.style.background=col;b.style.borderTopColor=col;
-    let pts=5;
-    if(isLetter){const remaining=need.filter(c=>!got.has(c));const ch=remaining.length?remaining[letterIdx++%remaining.length]:need[Math.floor(Math.random()*4)];
-      b.textContent=ch;b.dataset.letter=ch;b.style.width='64px';b.style.height='78px';b.style.fontSize='26px';pts=30;}
-    const x=10+Math.random()*(zw-80);b.style.left=x+'px';
-    const dur=4200+Math.random()*2200; b.style.transition=`transform ${dur}ms linear, opacity .18s`;
-    zone.appendChild(b);
-    setTimeout(()=>{b.style.transform=`translateY(-520px)`;},60);
-    function pop(){ if(!alive)return;
-      score+=pts;document.getElementById('balloon-score').textContent='נקודות: '+score;
-      if(b.dataset.letter){got.add(b.dataset.letter);renderLetters();
-        if(need.every(c=>got.has(c))){score+=50;document.getElementById('balloon-score').textContent='נקודות: '+score;lb.textContent='ליאן! 🌟 +50';}}
-      b.classList.add('pop');setTimeout(()=>b.remove(),200);}
-    b.addEventListener('pointerdown',pop,{once:true});
-    setTimeout(()=>b.remove(),dur+300);
-  },520);
-  countdown(document.getElementById('balloon-time'),30,()=>{alive=false;clearInterval(iv);
-    zone.querySelectorAll('.balloon').forEach(b=>b.remove());
-    document.getElementById('balloon-score-txt').textContent=score+' נקודות! 🎉';
-    document.getElementById('balloon-end').classList.remove('hidden');
-    confetti(document.getElementById('balloon-conf'));});
-}
 </script>
+<script src="games.js"></script>
 </body>
 </html>
