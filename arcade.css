@@ -20,3 +20,5 @@
 .letters span{width:29px;text-align:center;border-bottom:2px solid transparent}.letters span.letter-done{color:#5eead4}.letters span.letter-next{color:#fff;border-color:#fcd774}.letters small{font-size:11px;color:#b5a6d0;margin-right:6px}
 @media(max-width:380px){.arcade .game-head h3{font-size:18px}.arcade .overlay .big{font-size:24px}.arcade .overlay{padding:18px}}
 @media(prefers-reduced-motion:reduce){.sticker{animation:none}.arcade *{scroll-behavior:auto}}
+.arcade .overlay .confetti-canvas{background:transparent;z-index:0}
+.arcade .overlay>div,.arcade .overlay>button{position:relative;z-index:1}
