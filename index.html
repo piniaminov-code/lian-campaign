@@ -54,6 +54,15 @@ section{position:relative;z-index:1;margin:26px 0}
 /* song */
 .song-embed{border-radius:16px;overflow:hidden;box-shadow:0 6px 18px rgba(76,29,149,.15);background:#1e1b4b}
 .song-embed iframe{width:100%;height:250px;border:0;display:block}
+.song-player{display:flex;align-items:center;gap:14px;padding:18px 16px;direction:ltr}
+.song-play-btn{flex:none;width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(236,72,153,.45);transition:transform .12s}
+.song-play-btn:active{transform:scale(.92)}
+.song-play-btn .ic{transform:translateX(2px)}
+.song-info{flex:1;min-width:0;color:#fff}
+.song-name{font-family:'Heebo',sans-serif;font-weight:800;font-size:16px;margin-bottom:8px;direction:rtl;text-align:right}
+.song-progress{height:8px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden;cursor:pointer}
+#song-bar{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--pink),#facc15)}
+.song-times{display:flex;justify-content:space-between;font-size:12px;color:#c7b9f0;margin-top:5px;font-variant-numeric:tabular-nums}
 .lyrics{margin-top:12px}
 .lyrics summary{cursor:pointer;font-weight:700;color:var(--purple);font-size:15px;padding:8px 4px}
 .lyrics .box{background:#faf5ff;border:1.5px dashed #c4b5fd;border-radius:14px;padding:14px;font-size:15.5px;line-height:1.9;white-space:pre-line}
@@ -127,8 +136,14 @@ footer .heart{font-size:22px}
   <div class="card">
     <div class="sec-title"><span class="emoji">🎶</span><h2>שיר הקמפיין</h2></div>
     <div class="sec-sub">דקה של קצב — תלחצו פליי ותשרו איתנו!</div>
-    <div class="song-embed">
-      <iframe src="https://suno.com/embed/3dbe1065-be82-4c83-b2f1-0ae6916296a2" title="ליאן למועצה - שיר הקמפיין" loading="lazy" allow="autoplay"></iframe>
+    <div class="song-embed song-player">
+      <button id="song-play" class="song-play-btn" aria-label="הפעל את השיר"><span class="ic">▶</span></button>
+      <div class="song-info">
+        <div class="song-name">בום פצצה 💥 ליאן למועצה!</div>
+        <div class="song-progress" id="song-progress"><div id="song-bar"></div></div>
+        <div class="song-times"><span id="song-cur">0:00</span><span id="song-dur">1:03</span></div>
+      </div>
+      <audio id="song-audio" src="lian-jingle.mp3" preload="metadata" playsinline></audio>
     </div>
     <details class="lyrics">
       <summary>📝 המילים (לשיר ביחד!)</summary>
@@ -267,6 +282,23 @@ footer .heart{font-size:22px}
 </footer>
 
 <script>
+/* ---------- campaign song player ---------- */
+(function(){
+  const a=document.getElementById('song-audio'),btn=document.getElementById('song-play'),ic=btn.querySelector('.ic'),
+        bar=document.getElementById('song-bar'),cur=document.getElementById('song-cur'),dur=document.getElementById('song-dur'),
+        prog=document.getElementById('song-progress');
+  function fmt(s){if(!isFinite(s))return'0:00';s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+  btn.addEventListener('click',function(){
+    if(a.paused){const p=a.play();if(p&&p.catch)p.catch(function(){});}else{a.pause();}
+  });
+  a.addEventListener('play',function(){ic.textContent='⏸';ic.style.transform='none';});
+  a.addEventListener('pause',function(){ic.textContent='▶';ic.style.transform='translateX(2px)';});
+  a.addEventListener('loadedmetadata',function(){dur.textContent=fmt(a.duration);});
+  a.addEventListener('timeupdate',function(){cur.textContent=fmt(a.currentTime);if(a.duration)bar.style.width=(a.currentTime/a.duration*100)+'%';});
+  a.addEventListener('ended',function(){a.currentTime=0;bar.style.width='0%';cur.textContent='0:00';});
+  prog.addEventListener('click',function(e){const r=prog.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;if(a.duration)a.currentTime=f*a.duration;});
+})();
+
 /* ---------- shared helpers ---------- */
 function fitCanvas(cv){ const r=cv.getBoundingClientRect(); const dpr=window.devicePixelRatio||1; cv.width=r.width*dpr; cv.height=r.width*(420/360)*dpr; const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {w:r.width,h:r.width*(420/360),ctx}; }
 function confetti(cv){ const c=cv.getContext('2d'); cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; const P=[]; const colors=['#7c3aed','#ec4899','#f97316','#facc15','#22d3ee','#a3e635'];
