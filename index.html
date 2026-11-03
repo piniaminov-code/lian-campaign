@@ -329,6 +329,7 @@ footer .heart{font-size:22px}
   speech.addEventListener('pause',()=>{btn.textContent='▶ השמעת הנאום';});
   song.addEventListener('play',()=>speech.pause());
   speech.addEventListener('error',()=>{document.getElementById('speech-audio-error').hidden=false;});
+  speech.querySelector('source').addEventListener('error',()=>{document.getElementById('speech-audio-error').hidden=false;});
 })();
 
 /* ---------- shared helpers ---------- */
